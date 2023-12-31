@@ -1,0 +1,21 @@
+//this is after middleware verifyJWT.js so no additional checks are present in this controller.
+
+const tellUserName = (req, res) => {
+    const cookies = req.cookies;
+    if(!cookies?.jwt_at) return res.status(401).json({ msg: "Unauthorized: no access token found" });
+    const accessToken = cookies.jwt_at;
+    try {
+        const payload = decodeJwt(accessToken);
+        res.status(200).json({ msg: payload.username });
+    } catch {
+        res.status(500).json({ msg: "Server error getting username" });
+    }
+}
+
+function decodeJwt(token) {
+    var base64Payload = token.split(".")[1];
+    var payloadBuffer = Buffer.from(base64Payload, "base64");
+    return JSON.parse(payloadBuffer.toString());
+}
+
+module.exports = { tellUserName }
