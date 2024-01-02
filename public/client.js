@@ -27,7 +27,8 @@ const authModule = (function(){
             headers: {
                 'Content-Type': 'application/json', 
             },
-            credentials: 'include', 
+            // credentials: 'include', 
+            credentials: 'same-origin', //CORS 오류로 변경
             body: JSON.stringify(dataToSend), 
         })
             .then(response => {

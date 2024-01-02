@@ -5,6 +5,20 @@ const usersDB = {
 const fsPromises = require('fs').promises;
 const path = require('path');
 const bcrypt = require('bcrypt');
+const mysql = require('mysql2');  // mysql 모듈 로드
+
+const conn = {  // mysql 접속 설정
+    host: '127.0.0.1',
+    port: '3306',
+    user: 'root',
+    password: '1968',
+    database: 'compTodo'
+};
+
+let connection = mysql.createConnection(conn); // DB 커넥션 생성
+connection.connect();   // DB 접속
+
+var sql;
 
 const handleNewUser = async (req, res) => {
     const { user, pwd } = req.body; //destructuring assignment
@@ -24,6 +38,17 @@ const handleNewUser = async (req, res) => {
         );
         console.log(usersDB.users);
         res.status(201).json({ msg : `New user ${user} created!` });
+        
+        /* DB에 저장 */
+        sql="insert into testuser values('"+user+"','"+hashedPwd+"')";
+        connection.query(sql, function (err, results, fields) { 
+            if (err) {
+                console.log(err);
+            }
+            console.log(results);
+            
+        });
+
     } catch (err) {
         res.status(500).json({ 'message': err.message });
     }
