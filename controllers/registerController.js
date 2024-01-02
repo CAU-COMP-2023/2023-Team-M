@@ -46,7 +46,7 @@ const handleNewUser = async (req, res) => {
                 console.log(err);
             }
             console.log(results);
-            
+            /*git test*/
         });
 
     } catch (err) {
