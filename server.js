@@ -25,6 +25,7 @@ app.use('/username', require('./routes/api/username'));
 app.get('/protected', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'protectedpage.html'));
 })
+app.use('/friends', require('./routes/api/friends'))
 
 app.all('*', (req, res) => {
     res.status(404);
