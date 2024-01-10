@@ -1,9 +1,3 @@
-const usersDB = {
-    users: require('../model/users.json'),
-    setUsers: function (data) { this.users = data }
-}
-const fsPromises = require('fs').promises;
-const path = require('path');
 const bcrypt = require('bcrypt');
 const mysql = require('mysql2');  // mysql 모듈 로드
 
@@ -31,13 +25,6 @@ const handleNewUser = async (req, res) => {
         const hashedPwd = await bcrypt.hash(pwd, 10); //with 10 salt rounds
         //store the new user
         const newUser = { "username": user, "password": hashedPwd };
-        usersDB.setUsers([...usersDB.users, newUser]);
-        await fsPromises.writeFile(
-            path.join(__dirname, '..', 'model', 'users.json'),
-            JSON.stringify(usersDB.users)
-        );
-        console.log(usersDB.users);
-        res.status(201).json({ msg : `New user ${user} created!` });
         
         /* DB에 저장 */
         sql="insert into testuser values('"+user+"','"+hashedPwd+"','')";
@@ -53,10 +40,12 @@ const handleNewUser = async (req, res) => {
         connection.query(sql, function (err, results, fields) { 
             if (err) {
                 console.log(err);
+                throw err;
             }
             console.log(results);
             /*git test*/
         });
+        res.status(201).json({ msg : `New user ${user} created!` });
 
     } catch (err) {
         res.status(500).json({ 'message': err.message });
