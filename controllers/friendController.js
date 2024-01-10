@@ -5,7 +5,8 @@ const dbCreds = {
     //environment variable 이용해서 sql 인증 정보 안전하게 저장
 }
 
-const fetchUserName = require('./usernameController').tellUserName;
+const tellUserName = require('./usernameController').tellUserNameInProgress;
+
 
 const handleFriendSearch = async (req, res) => {
     const { targetUser } = req.body;
@@ -53,4 +54,13 @@ const handleMyFriends = async(req, res) => {
     }
 }
 
-module.exports = { handleFriendSearch , handleNewFriendship };
+const _testFunc = async(req, res) => {
+    try {
+        const result = tellUserName();
+        console.log(result);
+    } catch {
+        console.log('Err: cannot display username');
+    }
+}
+
+module.exports = { handleFriendSearch , handleNewFriendship, _testFunc };

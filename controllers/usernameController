@@ -4,7 +4,7 @@
 const tellUserName = (req, res) => {
     const result = tellUserNameInProgress(req, res);
     if(result)
-        res.status(200).json({ msg: result.username });
+        res.status(200).json({ msg: result });
     else
         res.status(500).json({ msg: "Server error getting username" });
 }
@@ -16,7 +16,7 @@ const tellUserNameInProgress = (req, res) => {
     const accessToken = cookies.jwt_at;
     try {
         const payload = decodeJwt(accessToken);
-        return payload;
+        return payload.username;
     } catch {
         return null;
     }
@@ -28,4 +28,4 @@ function decodeJwt(token) {
     return JSON.parse(payloadBuffer.toString());
 }
 
-module.exports = { tellUserName }
+module.exports = { tellUserName, tellUserNameInProgress }
