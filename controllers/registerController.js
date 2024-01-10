@@ -27,7 +27,16 @@ const handleNewUser = async (req, res) => {
         const newUser = { "username": user, "password": hashedPwd };
         
         /* DB에 저장 */
-        sql="insert into testuser values('"+user+"','"+hashedPwd+"')";
+        sql="insert into testuser values('"+user+"','"+hashedPwd+"','')";
+        connection.query(sql, function (err, results, fields) { 
+            if (err) {
+                console.log(err);
+            }
+            console.log(results);
+            /*git test*/
+        });
+
+        sql="select * from testuser;";
         connection.query(sql, function (err, results, fields) { 
             if (err) {
                 console.log(err);
