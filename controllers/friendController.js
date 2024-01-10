@@ -1,22 +1,16 @@
+const mysql = require('mysql2');  // mysql 모듈 로드
+require('dotenv').config();
 
-
-//DB 연결에 필요한 부분
-const mysql = require('mysql2');
 const conn = {  // mysql 접속 설정
-    host: '127.0.0.1',
-    port: '3306',
-    user: 'root',
-    password: '1968',
-    database: 'compTodo'
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT,
+    user: process.env.DB_USER,
+    password: process.env.DB_PW,
+    database: process.env.DB_NAME
 };
 
 let connection = mysql.createConnection(conn); // DB 커넥션 생성
 connection.connect();   // DB 접속
-
-require('dotenv').config();
-const dbCreds = {
-    //environment variable 이용해서 sql 인증 정보 안전하게 저장
-}
 
 const tellUserName = require('./usernameController').tellUserNameInProgress;
 
