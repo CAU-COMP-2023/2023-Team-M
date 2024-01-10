@@ -19,14 +19,13 @@ app.use('/auth', require('./routes/api/auth'));
 app.use('/refresh', require('./routes/api/refresh'));
 app.use('/logout', require('./routes/api/logout'));
 
-app.use('/friends', require('./routes/api/friends'));
 //everything after this line will require verifyJWT middleware!!!
 app.use(verifyJWT);
 app.use('/username', require('./routes/api/username'));
 app.get('/protected', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'protectedpage.html'));
 })
-//app.use('/friends', require('./routes/api/friends'))
+app.use('/friends', require('./routes/api/friends'))
 
 app.all('*', (req, res) => {
     res.status(404);
