@@ -55,7 +55,10 @@ const handleFriendSearch = async (req, res) => {
 
 /* post: add */
 const handleNewFriendship = async (req, res) => {
-    const { person1, person2 } = req.body;
+    const accessToken = req.cookies?.jwt_at; //optional chaining 잘 됐겄지..?
+    const person1 = usernameController.tellUserNamePlain(accessToken);
+    const { person2 } = req.body;
+    // const { person1, person2 } = req.body;
     let isFriend = null;
     var sql;
     //person1과 person2가 이미 친구인지 확인
@@ -100,7 +103,9 @@ const handleNewFriendship = async (req, res) => {
 /* friends list */
 /* get /friends/my */
 const handleMyFriends = async(req, res) => {
-    const { myUser } = req.body;
+    const accessToken = req.cookies?.jwt_at; //optional chaining 잘 됐겄지..?
+    const myUser = usernameController.tellUserNamePlain(accessToken);
+    // const { myUser } = req.body;
     try {
         let sql="select friendid from friends where myid='"+myUser +"';";
         let results=await excuteQuery(sql);
