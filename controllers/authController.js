@@ -15,7 +15,7 @@ const conn = {  // mysql 접속 설정
     user: process.env.DB_USER,
     password: process.env.DB_PW,
     database: process.env.DB_NAME,
-    debug: true
+    debug: false,
 };
 
 let connection = mysql.createConnection(conn); // DB 커넥션 생성
@@ -27,45 +27,49 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 
+function excuteQuery(sql) {
+    return new Promise((resolve, reject) => {
+        connection.query(sql, function (err, results, fields) {
+            if (err) {
+                console.log(err);
+                reject(err);
+            } else {
+                // console.log(results);
+                // console.log(results[0].pw);
+                results[0]==undefined?resolve(undefined):resolve(results);
+            }
+        });
+    });
+}
+
 const handleLogin = async (req, res) => {
     const { user, pwd } = req.body;
     if (!user || !pwd) return res.status(400).json({ msg: 'Username and password are required.' });
 
     
     /* 로그인 정보 DB 조회 */
-    var sql="select * from testuser where id='"+user+"';"; //id 조회 query
+    var sql="select pw from user where id='"+user+"';"; //id 조회 query
     console.log(sql);
-    var results;
-    try { //excute query
-        connection.query(sql, function (err, results, fields) { 
-            if (err) {
-                console.log(err);
-            }
-            console.log(results);
-            /*git test*/
-        });
-    } catch (err) {
-        console.log("error")
-    }
-    //DB에 없는 사용자라면 results = undefined로 출력됨.
-    if(results==undefined){
-        console.log("there is no user in DB");
-    }
+    let results;
 
-
-    const foundUser = usersDB.users.find(person => person.username === user);
-    if (!foundUser) return res.status(401).json({ msg: 'Incorrect username or password '}); //Unauthorized 
+    results= await excuteQuery(sql);
+    console.log(results);
+    if (results==undefined){
+        //connection.end();
+        return res.status(401).json({ msg: 'Incorrect username or password '}); //Unauthorized 
+} 
     // evaluate password 
-    const match = await bcrypt.compare(pwd, foundUser.password);
+
+    const match = await bcrypt.compare(pwd, results[0].pw);
     if (match) {
         // create JWTs
         const accessToken = jwt.sign(
-            { "username": foundUser.username },
+            { "username": user },
             process.env.ACCESS_TOKEN_SECRET,
             { expiresIn: '15m' }
         )
         const refreshToken = jwt.sign(
-            { "username": foundUser.username },
+            { "username": user },
             process.env.REFRESH_TOKEN_SECRET,
             { expiresIn: '1d' }
         )
@@ -76,18 +80,22 @@ const handleLogin = async (req, res) => {
         // const currentUser = { ...foundUser, refreshToken };
         // usersDB.setUsers([...otherUsers, currentUser]);
         // await fsPromises.writeFile(
-        //     path.join(__dirname, '..', 'model', 'users.json'),
-        //     JSON.stringify(usersDB.users)
+            //     path.join(__dirname, '..', 'model', 'users.json'),
+            //     JSON.stringify(usersDB.users)
         // );
         
         res.cookie('jwt', refreshToken, { httpOnly: true, maxAge: 24*60*60*1000 });
         //res.json({ accessToken });
         res.cookie('jwt_at', accessToken, { httpOnly: true, maxAge: 15*60*1000 });
-        res.status(200).json({ msg: `User ${foundUser.username} is successfully logged in!` });
+        // connection.end();
+        res.status(200).json({ msg: `User ${user} is successfully logged in!` });
         //res.json({ 'success': `User ${user} is logged in!` });
     } else {
+// connection.end();
         res.status(401).json({ msg: 'Incorrect username or password '});
     }
+
+    //connection.end();
 }
 
 module.exports = { handleLogin };
