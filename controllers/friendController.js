@@ -3,6 +3,7 @@ require('dotenv').config();
 
 const conn = {  // mysql 접속 설정
     host: process.env.DB_HOST,
+    port: process.env.DB_PORT,
     user: process.env.DB_USER,
     password: process.env.DB_PW,
     database: process.env.DB_NAME
@@ -11,7 +12,7 @@ const conn = {  // mysql 접속 설정
 let connection = mysql.createConnection(conn); // DB 커넥션 생성
 connection.connect();   // DB 접속
 
-const tellUserName = require('./usernameController').tellUserNameInProgress;
+const usernameController = require('./usernameController');
 
 function excuteQuery(sql) {
     return new Promise((resolve, reject) => {
@@ -118,12 +119,12 @@ const handleMyFriends = async(req, res) => {
 }
 
 const _testFunc = async(req, res) => {
-    try {
-        const result = tellUserName();
-        console.log(result);
-    } catch {
-        console.log('Err: cannot display username');
-    }
+    const accessToken = req.cookies.jwt_at?req.cookies.jwt_at:null;
+    const username = usernameController.tellUserNamePlain(accessToken);
+    if(!username)   
+        res.status(400).json({ msg: "logged in user not found"});
+    else
+        res.status(200).json({ msg: `${username}`});
 }
 
 module.exports = { handleFriendSearch , handleNewFriendship, _testFunc };
