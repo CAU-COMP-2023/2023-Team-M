@@ -1,14 +1,24 @@
 //this is after middleware verifyJWT.js so no additional checks are present in this controller.
+//to ensure interoperability with friendController.js, added tellUserNameInProgress that simply returns username, not in JSON.
 
 const tellUserName = (req, res) => {
+    const result = tellUserNameInProgress(req, res);
+    if(result)
+        res.status(200).json({ msg: result });
+    else
+        res.status(500).json({ msg: "Server error getting username" });
+}
+
+const tellUserNameInProgress = (req, res) => {
     const cookies = req.cookies;
-    if(!cookies?.jwt_at) return res.status(401).json({ msg: "Unauthorized: no access token found" });
+    // tellUserName에 있어야할게 tellUserNameInProgress로 들어가면서 난감
+    // if(!cookies?.jwt_at) return res.status(401).json({ msg: "Unauthorized: no access token found" });
     const accessToken = cookies.jwt_at;
     try {
         const payload = decodeJwt(accessToken);
-        res.status(200).json({ msg: payload.username });
+        return payload.username;
     } catch {
-        res.status(500).json({ msg: "Server error getting username" });
+        return null;
     }
 }
 
@@ -18,4 +28,4 @@ function decodeJwt(token) {
     return JSON.parse(payloadBuffer.toString());
 }
 
-module.exports = { tellUserName }
+module.exports = { tellUserName, tellUserNameInProgress }

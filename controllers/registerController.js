@@ -1,18 +1,21 @@
+//DB이전 완료 후 아래 파트 없애기
 const usersDB = {
     users: require('../model/users.json'),
     setUsers: function (data) { this.users = data }
 }
 const fsPromises = require('fs').promises;
 const path = require('path');
+
 const bcrypt = require('bcrypt');
 const mysql = require('mysql2');  // mysql 모듈 로드
+require('dotenv').config();
 
 const conn = {  // mysql 접속 설정
-    host: '127.0.0.1',
-    port: '3306',
-    user: 'root',
-    password: '1968',
-    database: 'compTodo'
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT,
+    user: process.env.DB_USER,
+    password: process.env.DB_PW,
+    database: process.env.DB_NAME
 };
 
 let connection = mysql.createConnection(conn); // DB 커넥션 생성
@@ -31,23 +34,27 @@ const handleNewUser = async (req, res) => {
         const hashedPwd = await bcrypt.hash(pwd, 10); //with 10 salt rounds
         //store the new user
         const newUser = { "username": user, "password": hashedPwd };
-        usersDB.setUsers([...usersDB.users, newUser]);
-        await fsPromises.writeFile(
-            path.join(__dirname, '..', 'model', 'users.json'),
-            JSON.stringify(usersDB.users)
-        );
-        console.log(usersDB.users);
-        res.status(201).json({ msg : `New user ${user} created!` });
         
         /* DB에 저장 */
-        sql="insert into testuser values('"+user+"','"+hashedPwd+"')";
+        sql="insert into testuser values('"+user+"','"+hashedPwd+"','')";
         connection.query(sql, function (err, results, fields) { 
             if (err) {
                 console.log(err);
             }
             console.log(results);
-            
+            /*git test*/
         });
+
+        sql="select * from testuser;";
+        connection.query(sql, function (err, results, fields) { 
+            if (err) {
+                console.log(err);
+                throw err;
+            }
+            console.log(results);
+            /*git test*/
+        });
+        res.status(201).json({ msg : `New user ${user} created!` });
 
     } catch (err) {
         res.status(500).json({ 'message': err.message });
