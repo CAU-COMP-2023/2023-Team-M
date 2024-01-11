@@ -1,3 +1,11 @@
+//DB이전 완료 후 아래 파트 없애기
+const usersDB = {
+    users: require('../model/users.json'),
+    setUsers: function (data) { this.users = data }
+}
+const fsPromises = require('fs').promises;
+const path = require('path');
+
 const bcrypt = require('bcrypt');
 const mysql = require('mysql2');  // mysql 모듈 로드
 require('dotenv').config();

@@ -1,7 +1,11 @@
-// const usersDB = {
-//     users: require('../model/users.json'),
-//     setUsers: function (data) { this.users = data }
-// }
+//DB 이전 후 아래파트 없애기
+const usersDB = {
+    users: require('../model/users.json'),
+    setUsers: function (data) { this.users = data }
+}
+const fsPromises = require('fs').promises;
+const path = require('path');
+
 const mysql = require('mysql2');  // mysql 모듈 로드
 require('dotenv').config();
 
@@ -10,7 +14,8 @@ const conn = {  // mysql 접속 설정
     port: process.env.DB_PORT,
     user: process.env.DB_USER,
     password: process.env.DB_PW,
-    database: process.env.DB_NAME
+    database: process.env.DB_NAME,
+    debug: true
 };
 
 let connection = mysql.createConnection(conn); // DB 커넥션 생성
