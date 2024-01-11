@@ -39,13 +39,13 @@ function excuteQuery(sql) {
 }
 
 const handleNewUser = async (req, res) => {
-    const { user, pwd } = req.body; //destructuring assignment
+    const { user, pwd,email,name } = req.body; //destructuring assignment
     if (!user || !pwd) return res.status(400).json({ msg: 'Username and password are required.' });
     // check for duplicate usernames in the db
     /* 존재하는 id 중복 처리*/
     sql="select id from user where id='"+user+"';";
     let resultId=await excuteQuery(sql);
-
+    console.log(resultId);
 
     //const duplicate = usersDB.users.find(person => person.username === user);
     if (resultId==user) return res.status(409).json({ msg: 'Username already exists' }); //Conflict 
