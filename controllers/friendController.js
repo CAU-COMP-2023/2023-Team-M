@@ -21,7 +21,7 @@ function excuteQuery(sql) {
                 console.log(err);
                 reject(err);
             } else {
-                // console.log(results);
+             console.log(results);
                 // console.log(results[0].pw);
 
                 /* RETURN FIRST TUPLE */
@@ -32,24 +32,25 @@ function excuteQuery(sql) {
 }
 
 /* id로 유저 찾기 */
+/* friends/search */ 
 const handleFriendSearch = async (req, res) => {
     const { targetUser } = req.body;
-    var sql;
+    let sql;
     if(!targetUser) //만약 targetUser이 비어있으면 
         return res.status(400).json({ msg: "empty request; need username to search" });
     //DB에 있는지 확인
     
     sql="select id from user where id='"+targetUser+"' or email='"+targetUser+"';";
-    
+    console.log(sql);
     let results=await excuteQuery(sql);
-    console.log("handleFriendSearch.results(id): "+results[0].id);
+    console.log(results[0].myid);
 
     if(results==undefined){ //찾는 유저 없음
-        res.status(401).json({msg: "찾는 유저 없음"});
+        return res.status(401).json({msg: "찾는 유저 없음"});
     }
     else{
         /* 유저 찾음 */
-        res.status(200).json(results[0].id); //형식 체크해봐야 함.
+        return res.status(200).json({msg: "성공"}); //형식 체크해봐야 함.
     }
 }
 
@@ -57,26 +58,27 @@ const handleFriendSearch = async (req, res) => {
 
 const handleNewFriendship = async (req, res) => {
     const { person1, person2 } = req.body;
-    const isFriend = null;
+    let isFriend = null;
     var sql;
     //person1과 person2가 이미 친구인지 확인
     try {
         //DB검색
-        sql="select *from friends"+ 
+        sql="select *from friends "+ 
         "where (myid='"+person1+"' and friendid='"+person2+"') "+
         "or (myid='"+person2+"' and friendid='"+person1+"')";
-
+        
         let results=await excuteQuery(sql);
         if(results[0]!=undefined && results[1]!=undefined) isFriend=true;
     }
-    catch {
+    catch(err) {
         //DB 오류
+        console.log(err);
         return res.status(500).json({ msg: "Internal Server Err: 친구 검색 재시도 바람."});
     }
     if(isFriend)
         return res.status(409).json({ msg: "이미 친구입니다." });
 
-    //DB애서 친구추가 작업 진행
+    //DB에서 친구추가 작업 진행
     try {
         //DB에서 친구 추가
 

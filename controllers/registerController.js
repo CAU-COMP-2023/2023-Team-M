@@ -43,7 +43,7 @@ const handleNewUser = async (req, res) => {
     if (!user || !pwd) return res.status(400).json({ msg: 'Username and password are required.' });
     // check for duplicate usernames in the db
     /* 존재하는 id 중복 처리*/
-    sql="select id from testuser where id='"+user+"';";
+    sql="select id from user where id='"+user+"';";
     let resultId=await excuteQuery(sql);
 
 
@@ -55,8 +55,8 @@ const handleNewUser = async (req, res) => {
         //store the new user
         const newUser = { "username": user, "password": hashedPwd };
         
-        /* DB에 저장 */
-        sql="insert into testuser values('"+user+"','"+hashedPwd+"','')";
+        /* 새 유저 DB에 저장 */
+        sql="insert into user values('"+user+"','"+user+"@cau.ac.kr','"+hashedPwd+"','"+user+"','')";
         connection.query(sql, function (err, results, fields) { 
             if (err) {
                 console.log(err);
@@ -65,7 +65,7 @@ const handleNewUser = async (req, res) => {
             /*git test*/
         });
 
-        sql="select * from testuser;";
+        sql="select * from user;";
         connection.query(sql, function (err, results, fields) { 
             if (err) {
                 console.log(err);
