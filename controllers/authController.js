@@ -15,7 +15,7 @@ const conn = {  // mysql 접속 설정
     user: process.env.DB_USER,
     password: process.env.DB_PW,
     database: process.env.DB_NAME,
-    debug: true
+    debug: false,
 };
 
 let connection = mysql.createConnection(conn); // DB 커넥션 생성
@@ -26,6 +26,38 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
+// async function excuteQuery(sql){
+//     try { //excute query
+//         connection.query(sql, function (err, results, fields) { 
+//            if (err) {
+//                console.log(err);
+//            }
+//            console.log(results); //로그인 정보 있음.
+//            /*git test*/
+//            console.log(results[0].pw); //이런 식으로 pw만 추출 가능.
+//            return results[0].pw;
+
+
+//        });
+//    } catch (err) {
+//        console.log("error");
+//        return null;
+//    }
+// }
+function excuteQuery(sql) {
+    return new Promise((resolve, reject) => {
+        connection.query(sql, function (err, results, fields) {
+            if (err) {
+                console.log(err);
+                reject(err);
+            } else {
+                // console.log(results);
+                // console.log(results[0].pw);
+                results[0]==undefined?resolve(undefined):resolve(results[0].pw);
+            }
+        });
+    });
+}
 
 const handleLogin = async (req, res) => {
     const { user, pwd } = req.body;
@@ -33,39 +65,30 @@ const handleLogin = async (req, res) => {
 
     
     /* 로그인 정보 DB 조회 */
-    var sql="select * from testuser where id='"+user+"';"; //id 조회 query
+    var sql="select pw from testuser where id='"+user+"';"; //id 조회 query
     console.log(sql);
-    var results;
-    try { //excute query
-        connection.query(sql, function (err, results, fields) { 
-            if (err) {
-                console.log(err);
-            }
-            console.log(results);
-            /*git test*/
-        });
-    } catch (err) {
-        console.log("error")
-    }
-    //DB에 없는 사용자라면 results = undefined로 출력됨.
-    if(results==undefined){
-        console.log("there is no user in DB");
-    }
+    let resultPw;
 
+    resultPw= await excuteQuery(sql);
+    
 
-    const foundUser = usersDB.users.find(person => person.username === user);
-    if (!foundUser) return res.status(401).json({ msg: 'Incorrect username or password '}); //Unauthorized 
+    
+    if (resultPw==undefined){
+        //connection.end();
+        return res.status(401).json({ msg: 'Incorrect username or password '}); //Unauthorized 
+    } 
     // evaluate password 
-    const match = await bcrypt.compare(pwd, foundUser.password);
+
+    const match = await bcrypt.compare(pwd, resultPw);
     if (match) {
         // create JWTs
         const accessToken = jwt.sign(
-            { "username": foundUser.username },
+            { "username": user },
             process.env.ACCESS_TOKEN_SECRET,
             { expiresIn: '15m' }
         )
         const refreshToken = jwt.sign(
-            { "username": foundUser.username },
+            { "username": user },
             process.env.REFRESH_TOKEN_SECRET,
             { expiresIn: '1d' }
         )
@@ -83,11 +106,15 @@ const handleLogin = async (req, res) => {
         res.cookie('jwt', refreshToken, { httpOnly: true, maxAge: 24*60*60*1000 });
         //res.json({ accessToken });
         res.cookie('jwt_at', accessToken, { httpOnly: true, maxAge: 15*60*1000 });
-        res.status(200).json({ msg: `User ${foundUser.username} is successfully logged in!` });
+      // connection.end();
+        res.status(200).json({ msg: `User ${user} is successfully logged in!` });
         //res.json({ 'success': `User ${user} is logged in!` });
     } else {
+       // connection.end();
         res.status(401).json({ msg: 'Incorrect username or password '});
     }
+
+    //connection.end();
 }
 
 module.exports = { handleLogin };
