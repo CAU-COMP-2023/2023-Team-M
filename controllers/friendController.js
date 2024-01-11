@@ -13,7 +13,24 @@ connection.connect();   // DB 접속
 
 const tellUserName = require('./usernameController').tellUserNameInProgress;
 
+function excuteQuery(sql) {
+    return new Promise((resolve, reject) => {
+        connection.query(sql, function (err, results, fields) {
+            if (err) {
+                console.log(err);
+                reject(err);
+            } else {
+                // console.log(results);
+                // console.log(results[0].pw);
 
+                /* RETURN FIRST TUPLE */
+                results[0]==undefined?resolve(undefined):resolve(results); 
+            }
+        });
+    });
+}
+
+/* id로 유저 찾기 */
 const handleFriendSearch = async (req, res) => {
     const { targetUser } = req.body;
     var sql;
@@ -22,28 +39,20 @@ const handleFriendSearch = async (req, res) => {
     //DB에 있는지 확인
     
     sql="select id from user where id='"+targetUser+"' or email='"+targetUser+"';";
-    console.log("handleFriendSearch: "+sql);
-
-    var results;
-    try { //excute query
-        connection.query(sql, function (err, results, fields) { 
-            if (err) {
-                console.log(err);
-            }
-            console.log(results);
-            /*git test*/
-        });
-    } catch (err) {
-        console.log("error")
-    }
+    
+    let results=await excuteQuery(sql);
+    console.log("handleFriendSearch.results(id): "+results[0].id);
 
     if(results==undefined){ //찾는 유저 없음
         res.status(401).json({msg: "찾는 유저 없음"});
     }
     else{
-        res.status(200).json(results); //체크해봐야 함.
+        /* 유저 찾음 */
+        res.status(200).json(results[0].id); //형식 체크해봐야 함.
     }
 }
+
+
 
 const handleNewFriendship = async (req, res) => {
     const { person1, person2 } = req.body;
@@ -56,19 +65,8 @@ const handleNewFriendship = async (req, res) => {
         "where (myid='"+person1+"' and friendid='"+person2+"') "+
         "or (myid='"+person2+"' and friendid='"+person1+"')";
 
-        console.log("friends Search: "+sql);
-
-        try { //excute query
-            connection.query(sql, function (err, results, fields) { 
-                if (err) {
-                    console.log(err);
-                }
-                console.log(results);
-                /*git test*/
-            });
-        } catch (err) {
-            console.log("error")
-        }
+        let results=await excuteQuery(sql);
+        if(results[0]!=undefined && results[1]!=undefined) isFriend=true;
     }
     catch {
         //DB 오류
@@ -105,9 +103,14 @@ const handleNewFriendship = async (req, res) => {
     //
 }   
 
+
+/* friends list */
 const handleMyFriends = async(req, res) => {
+    const { findUser } = req.body;
     try {
-        
+        let sql="select id from testuser where myid='"+ +"';";
+        let results=excuteQuery(sql);
+
     }
     catch {
 
