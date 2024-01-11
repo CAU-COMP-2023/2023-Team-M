@@ -48,12 +48,12 @@ const handleLogin = async (req, res) => {
 
     
     /* 로그인 정보 DB 조회 */
-    var sql="select pw from testuser where id='"+user+"';"; //id 조회 query
+    var sql="select pw from user where id='"+user+"';"; //id 조회 query
     console.log(sql);
     let results;
 
     results= await excuteQuery(sql);
-    
+    console.log(results);
     if (results==undefined){
         //connection.end();
         return res.status(401).json({ msg: 'Incorrect username or password '}); //Unauthorized 
