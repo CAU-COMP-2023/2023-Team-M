@@ -26,24 +26,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
-// async function excuteQuery(sql){
-//     try { //excute query
-//         connection.query(sql, function (err, results, fields) { 
-//            if (err) {
-//                console.log(err);
-//            }
-//            console.log(results); //로그인 정보 있음.
-//            /*git test*/
-//            console.log(results[0].pw); //이런 식으로 pw만 추출 가능.
-//            return results[0].pw;
 
-
-//        });
-//    } catch (err) {
-//        console.log("error");
-//        return null;
-//    }
-// }
 function excuteQuery(sql) {
     return new Promise((resolve, reject) => {
         connection.query(sql, function (err, results, fields) {
@@ -53,7 +36,7 @@ function excuteQuery(sql) {
             } else {
                 // console.log(results);
                 // console.log(results[0].pw);
-                results[0]==undefined?resolve(undefined):resolve(results[0].pw);
+                results[0]==undefined?resolve(undefined):resolve(results);
             }
         });
     });
@@ -67,19 +50,17 @@ const handleLogin = async (req, res) => {
     /* 로그인 정보 DB 조회 */
     var sql="select pw from testuser where id='"+user+"';"; //id 조회 query
     console.log(sql);
-    let resultPw;
+    let results;
 
-    resultPw= await excuteQuery(sql);
+    results= await excuteQuery(sql);
     
-
-    
-    if (resultPw==undefined){
+    if (results==undefined){
         //connection.end();
         return res.status(401).json({ msg: 'Incorrect username or password '}); //Unauthorized 
 } 
     // evaluate password 
-    
-    const match = await bcrypt.compare(pwd, resultPw);
+
+    const match = await bcrypt.compare(pwd, results[0].pw);
     if (match) {
         // create JWTs
         const accessToken = jwt.sign(
