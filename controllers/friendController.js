@@ -21,7 +21,7 @@ function excuteQuery(sql) {
                 console.log(err);
                 reject(err);
             } else {
-             console.log(results);
+             //console.log(results);
                 // console.log(results[0].pw);
 
                 /* RETURN FIRST TUPLE */
@@ -32,7 +32,7 @@ function excuteQuery(sql) {
 }
 
 /* id로 유저 찾기 */
-/* friends/search */ 
+/* get friends/search */ 
 const handleFriendSearch = async (req, res) => {
     const { targetUser } = req.body;
     let sql;
@@ -41,21 +41,19 @@ const handleFriendSearch = async (req, res) => {
     //DB에 있는지 확인
     
     sql="select id from user where id='"+targetUser+"' or email='"+targetUser+"';";
-    console.log(sql);
     let results=await excuteQuery(sql);
-    console.log(results[0].myid);
 
     if(results==undefined){ //찾는 유저 없음
         return res.status(401).json({msg: "찾는 유저 없음"});
     }
     else{
         /* 유저 찾음 */
-        return res.status(200).json({msg: "성공"}); //형식 체크해봐야 함.
+        return res.status(200).json({msg: results[0].id}); //형식 체크
     }
 }
 
 
-
+/* post: add */
 const handleNewFriendship = async (req, res) => {
     const { person1, person2 } = req.body;
     let isFriend = null;
@@ -68,55 +66,50 @@ const handleNewFriendship = async (req, res) => {
         "or (myid='"+person2+"' and friendid='"+person1+"')";
         
         let results=await excuteQuery(sql);
-        if(results[0]!=undefined && results[1]!=undefined) isFriend=true;
+        if(results!=undefined){
+            if(results[0]!=undefined && results[1]!=undefined) isFriend=true;
+        }
+       
     }
     catch(err) {
         //DB 오류
         console.log(err);
         return res.status(500).json({ msg: "Internal Server Err: 친구 검색 재시도 바람."});
     }
-    if(isFriend)
-        return res.status(409).json({ msg: "이미 친구입니다." });
+    if(isFriend) return res.status(409).json({ msg: "이미 친구입니다." });
 
-    //DB에서 친구추가 작업 진행
-    try {
-        //DB에서 친구 추가
-
-        /*양 컬럼에 모두 추가함*/
-        sql="insert into friends values('"+person1+"','"+person2+"');"+
-        "insert into friends values('"+person2+"','"+person1+"');"
-
-        try { //excute query
-            connection.query(sql, function (err, results, fields) { 
-                if (err) {
-                    console.log(err);
-                }
-                console.log(results);
-                /*git test*/
-            });
-        } catch (err) {
-            console.log("error")
-        }
-
+    
+    
+    /* DB 친구추가 */
+    /* friends의 양 컬럼에 모두 추가함*/
+    let insertSql1=" insert into friends values('"+person2+"','"+person1+"');";
+    let insertSql2=" insert into friends values('"+person1+"','"+person2+"');";
+    try { //excute query
+        excuteQuery(insertSql1);
+         excuteQuery(insertSql2);
+    } catch (err) {
+        console.log(err);
+    return res.status(500).json({ msg: "Internal Server Err: 친구 추가 재시도 바람."});
     }
-    catch {
-        //DB 오류
-        return res.status(500).json({ msg: "Internal Server Err: 친구 추가 재시도 바람."});
-    }
+    return res.status(200).json({msg: person1+", "+person2+" 친구 추가 완료"});
+  
     //
 }   
 
 
 /* friends list */
+/* get /friends/my */
 const handleMyFriends = async(req, res) => {
-    const { findUser } = req.body;
+    const { myUser } = req.body;
     try {
-        let sql="select id from testuser where myid='"+ +"';";
-        let results=excuteQuery(sql);
-
+        let sql="select friendid from friends where myid='"+myUser +"';";
+        let results=await excuteQuery(sql);
+        console.log(JSON.stringify(results));
+        return res.status(200).json({msg: JSON.stringify(results)});
     }
-    catch {
-
+    catch(err) {
+        console.log(err);
+        return res.status(500).json({msg: "친구 목록 오류"});
     }
 }
 
@@ -129,4 +122,4 @@ const _testFunc = async(req, res) => {
         res.status(200).json({ msg: `${username}`});
 }
 
-module.exports = { handleFriendSearch , handleNewFriendship, _testFunc };
+module.exports = { handleFriendSearch , handleNewFriendship, handleMyFriends,_testFunc };
