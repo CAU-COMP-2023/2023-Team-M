@@ -23,12 +23,32 @@ connection.connect();   // DB 접속
 
 var sql;
 
+function excuteQuery(sql) {
+    return new Promise((resolve, reject) => {
+        connection.query(sql, function (err, results, fields) {
+            if (err) {
+                console.log(err);
+                reject(err);
+            } else {
+                // console.log(results);
+                // console.log(results[0].pw);
+                results[0]==undefined?resolve(undefined):resolve(results[0].id);
+            }
+        });
+    });
+}
+
 const handleNewUser = async (req, res) => {
     const { user, pwd } = req.body; //destructuring assignment
     if (!user || !pwd) return res.status(400).json({ msg: 'Username and password are required.' });
     // check for duplicate usernames in the db
-    const duplicate = usersDB.users.find(person => person.username === user);
-    if (duplicate) return res.status(409).json({ msg: 'Username already exists' }); //Conflict 
+    /* 존재하는 id 중복 처리*/
+    sql="select id from testuser where id='"+user+"';";
+    let resultId=await excuteQuery(sql);
+
+
+    //const duplicate = usersDB.users.find(person => person.username === user);
+    if (resultId==user) return res.status(409).json({ msg: 'Username already exists' }); //Conflict 
     try {
         //encrypt the password
         const hashedPwd = await bcrypt.hash(pwd, 10); //with 10 salt rounds
