@@ -1,11 +1,3 @@
-//DB이전 완료 후 아래 파트 없애기
-const usersDB = {
-    users: require('../model/users.json'),
-    setUsers: function (data) { this.users = data }
-}
-const fsPromises = require('fs').promises;
-const path = require('path');
-
 const bcrypt = require('bcrypt');
 const mysql = require('mysql2');  // mysql 모듈 로드
 require('dotenv').config();
@@ -39,30 +31,26 @@ function excuteQuery(sql) {
 }
 
 const handleNewUser = async (req, res) => {
-    const { user, pwd,email,name } = req.body; //destructuring assignment
+    const { user, pwd, email, name } = req.body; //destructuring assignment
     if (!user || !pwd) return res.status(400).json({ msg: 'Username and password are required.' });
     // check for duplicate usernames in the db
     /* 존재하는 id 중복 처리*/
     sql="select id from user where id='"+user+"';";
-    let resultId=await excuteQuery(sql);
-    console.log(resultId);
+    let resultId=await excuteQuery(sql); //id 존재할 경우 id가 resultId에 반환됨, 없을 경우 undefined.
+    console.log(`resultId: ${resultId}`);
 
-    //const duplicate = usersDB.users.find(person => person.username === user);
     if (resultId==user) return res.status(409).json({ msg: 'Username already exists' }); //Conflict 
     try {
         //encrypt the password
         const hashedPwd = await bcrypt.hash(pwd, 10); //with 10 salt rounds
-        //store the new user
-        const newUser = { "username": user, "password": hashedPwd };
         
-        /* 새 유저 DB에 저장 */
-        sql="insert into user values('"+user+"','"+user+"@cau.ac.kr','"+hashedPwd+"','"+user+"','')";
+        /* 신규 유저 -> DB에 저장 */
+        sql="insert into user values('"+user+"','"+email+"','"+hashedPwd+"','"+name+"','')";
         connection.query(sql, function (err, results, fields) { 
             if (err) {
                 console.log(err);
             }
             console.log(results);
-            /*git test*/
         });
 
         sql="select * from user;";
@@ -72,7 +60,6 @@ const handleNewUser = async (req, res) => {
                 throw err;
             }
             console.log(results);
-            /*git test*/
         });
         res.status(201).json({ msg : `New user ${user} created!` });
 
