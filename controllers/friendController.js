@@ -44,7 +44,7 @@ const handleFriendSearch = async (req, res) => {
     let results=await excuteQuery(sql);
 
     if(results==undefined){ //찾는 유저 없음
-        return res.status(401).json({msg: "찾는 유저 없음"});
+        return res.status(400).json({msg: "찾는 유저 없음"});
     }
     else{
         /* 유저 찾음 */
