@@ -3,7 +3,7 @@ const router = express.Router();
 const path = require('path');
 const friendController = require('../../controllers/friendController');
 
-router.get('/search', friendController.handleFriendSearch);
+router.post('/search', friendController.handleFriendSearch);
 
 router.post('/add', friendController.handleNewFriendship);
 
