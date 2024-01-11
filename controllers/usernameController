@@ -1,5 +1,6 @@
 //this is after middleware verifyJWT.js so no additional checks are present in this controller.
 //to ensure interoperability with friendController.js, added tellUserNameInProgress that simply returns username, not in JSON.
+//tellUserNameInProgress는 무시하자. 원래 용도대로 작동하는 tellUserNamePlain을 만들었다.
 
 const tellUserName = (req, res) => {
     const result = tellUserNameInProgress(req, res);
@@ -22,10 +23,15 @@ const tellUserNameInProgress = (req, res) => {
     }
 }
 
+const tellUserNamePlain = (accessToken) => {
+    const payload = decodeJwt(accessToken);
+    return payload.username;
+}
+
 function decodeJwt(token) {
     var base64Payload = token.split(".")[1];
     var payloadBuffer = Buffer.from(base64Payload, "base64");
     return JSON.parse(payloadBuffer.toString());
 }
 
-module.exports = { tellUserName, tellUserNameInProgress }
+module.exports = { tellUserName, tellUserNameInProgress, tellUserNamePlain }

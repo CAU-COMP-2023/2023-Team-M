@@ -76,9 +76,9 @@ const handleLogin = async (req, res) => {
     if (resultPw==undefined){
         //connection.end();
         return res.status(401).json({ msg: 'Incorrect username or password '}); //Unauthorized 
-    } 
+} 
     // evaluate password 
-
+    
     const match = await bcrypt.compare(pwd, resultPw);
     if (match) {
         // create JWTs
@@ -99,18 +99,18 @@ const handleLogin = async (req, res) => {
         // const currentUser = { ...foundUser, refreshToken };
         // usersDB.setUsers([...otherUsers, currentUser]);
         // await fsPromises.writeFile(
-        //     path.join(__dirname, '..', 'model', 'users.json'),
-        //     JSON.stringify(usersDB.users)
+            //     path.join(__dirname, '..', 'model', 'users.json'),
+            //     JSON.stringify(usersDB.users)
         // );
         
         res.cookie('jwt', refreshToken, { httpOnly: true, maxAge: 24*60*60*1000 });
         //res.json({ accessToken });
         res.cookie('jwt_at', accessToken, { httpOnly: true, maxAge: 15*60*1000 });
-      // connection.end();
+        // connection.end();
         res.status(200).json({ msg: `User ${user} is successfully logged in!` });
         //res.json({ 'success': `User ${user} is logged in!` });
     } else {
-       // connection.end();
+// connection.end();
         res.status(401).json({ msg: 'Incorrect username or password '});
     }
 
